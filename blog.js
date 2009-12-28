@@ -4,22 +4,25 @@ var sys = require('sys');
 
 var b = exports;
 
-b.sendHTML = function(body, code, header){
-  code = code || 200;
-  return function(req, res){
-    res.sendHeader(code, [['Content-Type', 'text/plain']
-    ,['Content-Length', body.length]
-    ]);
-    res.sendBody(body);
-    res.finish();
-  }
+b.sendHTML = function(body, res){
+  code = 200;
+  header = [['Content-Type', 'text/plain']
+                      ,['Content-Length', body.length]];
+  res.sendHeader(code, header);
+  res.sendBody(body);
+  res.finish();
 };
 
 b.getMap = {};
+b.postMap = {};
 
 b.get = function(path, handler){
   b.getMap[path] = handler;
 };
+
+b.post = function(path, handler){
+  b.postMap[path] = handler;
+}
 
 function notFound(req, res){
   var NOT_FOUND = 'Not Found\n';
@@ -29,9 +32,28 @@ function notFound(req, res){
 var server = CS(function(req, res){
   if(req.method === 'GET'){
     var handler = b.getMap[req.uri.path] || notFound;
+  } else if(req.method === 'POST'){
+    var handler = b.postMap[req.uri.path] || notFound;
   }
+  // do not use req.body from the beginning because need to send the entire body at once
+  body = "";
+  // make the body of the request easily accessible
+  req.addListener('body', function(chunk){body += chunk;});
+  req.addListener('complete', function(){
+    req.body = body;
+    this.emit('bodyLoaded');
+  });
   handler(req, res);
 });
+
+b.getPostParams = function(req, callback){
+  var body = '';
+  sys.puts('in here');
+  req.addListener('body', function(chunk){body += chunk;})
+     .addListener('complete', function(){
+       callback(unescape(body.substring(8).replace(/\+/g,' ')));
+     });
+}
 
 b.listen = function(port, host){
   server.listen(port, host);
