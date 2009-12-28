@@ -1,10 +1,10 @@
 PORT = 7000
 HOST = null;
 
-var awe = require('./blog');
+var b = require('./blog');
 var sys = require('sys');
 
-awe.listen(PORT, HOST);
+b.listen(PORT, HOST);
 
-awe.get('/', awe.sendFile('index.html'));
+b.get('/', b.sendHTML(process.platform));
 
