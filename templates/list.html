@@ -1,0 +1,10 @@
+<body>
+<p>Hello everyone! Welcome to the start of blog.js, a blogging engine based on <a href="www.nodejs.org">node.js</a>. The <a href="http://github.com/furtivefelon/blog.js">code</a> is currently resides at github, and is released under MIT/BSD license. It is my hope that this blogging framework will be a good example of how to build a full-fledged web application using node js (and a custom framework that anyone can use tentatively named b.js.</p>
+<p>On this page, you can play around with the current version of blog.js, and if you have any questions, please direct it to the github page. I (jasonwang), also hang out in #node.js at irc.freenode.net</p>
+<p><a href="/addForm">Add new Entry</a></p>
+<ul>
+  <% _.each(titles, function(title){ %>
+    <li><a href="/view/<%= title %>"><%= title %></a></li>
+  <% }); %>
+</ul>
+</body>

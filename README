@@ -1,0 +1,12 @@
+Blog.js
+
+Released under a standard MIT/BSD license (take your pick). 
+
+This document talks about how to use the framework evolved through the development of this blogging engine. There are two goals for this project. The first of which is to develop a blogging engine mature enough for my personal use, and perhaps is good enough for many others as well. The second goal is to provide a standard demonstration of how to develop a full-fledged web application using node.js.  
+
+To use the framework, please include the following line in your application: require(./b);
+
+Routing
+Routing is regex based, and to my knowledge, is similar to the way sinatra does it (Although I have never used sinatra). Currently, 
+
+
