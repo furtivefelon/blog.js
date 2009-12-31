@@ -1,3 +1,3 @@
 [submodule "underscore"]
 	path = underscore
-	url = git://github.com/furtivefelon/blog.js
+	url = git://github.com/furtivefelon/underscore
