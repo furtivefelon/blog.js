@@ -6,7 +6,12 @@ This document talks about how to use the framework evolved through the developme
 
 To use the framework, please include the following line in your application: require(./b);
 
-Check out the demo at http://awe.cc
+Type the following incantation to pull the source to your folder:
+
+git clone git://github.com/furtivefelon/blog.js
+cd blog.js
+git submodule init
+git submodule update
 
 Also, open blog.js, and edit BLOG_PREFIX to the full path to the blog.js folder. After, cd into the blog.js folder, and type mkdir posts. Then assuming node.js is install properly, you can then type node blog.js to run the server. Go to http://127.0.0.1:7000/addForm to add an entry, then go to http://127.0.0.1:7000 to view the result!
 
