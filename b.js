@@ -1,5 +1,5 @@
 var CS = require('http').createServer;
-var posix = require('posix');
+var fs = require('fs');
 var sys = require('sys');
 require('./underscore/underscore');
 
@@ -11,9 +11,9 @@ getMap = {};
 postMap = {};
 
 b.setStaticPath = function(prefix, path){
-  posix.stat(prefix + path).addCallback(function(stats){
+  fs.stat(prefix + path,function(err,stats){
     if(stats.isDirectory()){
-      posix.readdir(prefix+path).addCallback(function(files){
+      fs.readdir(prefix+path,function(err,files){
         _.each(files, function(file){
           b.setStaticPath(prefix, path+'/'+file);
         });
@@ -45,9 +45,9 @@ var server = CS(function(req, res){
     code = code || 200;
     header = [['Content-Type', 'text/html; charset=utf-8']
             ,['Content-Length', body.length]];
-    this.sendHeader(code, header);
-    this.sendBody(unescape(body));
-    this.finish();
+    this.writeHead(code, header);
+    this.write(unescape(body));
+    this.end();
   };
   // Currently, if the request is GET, then only header is mostly
   // relevant. If the request is POST, then the body may be relevant
@@ -58,7 +58,7 @@ var server = CS(function(req, res){
     var handled = false;
     if(!handler){
       _.each(_.keys(getMap), function(key){
-        var args = new RegExp(key).exec(req.uri.path);
+        var args = new RegExp(key).exec(req.url);
         if(args){
           args.shift();
           args.unshift(req, res);
@@ -70,13 +70,16 @@ var server = CS(function(req, res){
     }
     if(!handled) notFound(req, res);
   } else if(req.method === 'POST'){
-    var handler = postMap[req.uri.path] || notFound;
-    req.body = '';
-    req.addListener('body', function(chunk){req.body = chunk;});
-    req.addListener('complete', function(){
-      var info = /([^=&]+)=([^&]+)/ig, match;
+    var handler = postMap[req.url] || notFound;
+	req.body = '';
+    req.addListener('data', function(chunk){sys.puts("chunk = " + chunk);req.body = chunk;});
+    req.addListener('end', function(){
+      var info = /([^=&]+)=([^&]+)/ig;
+	  var match;
+      
       req.params = req.params || {};
       while((match = info.exec(req.body)) != null){
+		sys.puts("puts: post vars = " + match[1] + " = " + match[2] )
         req.params[match[1]] = match[2];
       }
       handler(req, res);
@@ -86,7 +89,6 @@ var server = CS(function(req, res){
 
 b.getPostParams = function(req, callback){
   var body = '';
-  sys.puts('in here');
   req.addListener('body', function(chunk){body += chunk;})
      .addListener('complete', function(){
        callback(unescape(body.substring(8).replace(/\+/g,' ')));
@@ -112,23 +114,22 @@ b.sendFile = function(filename){
       return;
     }
     sys.puts("Loading " + filename + '...');
-    var file = posix.cat(filename, 'utf8');
-    file.addCallback(function(data){
+    var file = fs.readFile(filename, 'utf8',function(err,data){
+	  if(err){
+	    sys.puts('Error ' + err + ' while loading ' + filename);
+	  }
       body = data;
       headers = [['Content-Type', content_type]
       ,['Content-Length', data.length]];
       sys.puts('static file' + filename + ' loaded');
       callback();
     });
-    file.addErrback(function(){
-      sys.puts('Error loading ' + filename);
-    });
   }
   return function(req, res){
     loadResponseData(function(){
-      res.sendHeader(200, headers);
-      res.sendBody(body);
-      res.finish();
+      res.writeHead(200, headers);
+      res.write(body);
+      res.end();
     });
   }
 };
